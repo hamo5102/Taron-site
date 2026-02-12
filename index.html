@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Valentine?</title>
+  <style>
+    :root{
+      --bg1:#fff0f6; --bg2:#ffe5ec;
+      --card:#ffffffee;
+      --accent:#ff4d6d; --accent2:#c9184a;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; height:100vh; overflow:hidden;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      background: radial-gradient(circle at 20% 20%, var(--bg2), var(--bg1));
+      display:grid; place-items:center;
+      color:#222;
+    }
+
+    .card{
+      position:relative;
+      width:min(700px, 95vw);
+      padding:30px 22px 24px;
+      border-radius:28px;
+      background: var(--card);
+      border:1px solid rgba(0,0,0,0.06);
+      box-shadow: 0 22px 70px rgba(0,0,0,0.12);
+      text-align:center;
+      overflow:hidden;
+      backdrop-filter: blur(10px);
+    }
+
+    .card::before{
+      content:"";
+      position:absolute;
+      left:-20%; top:-35%;
+      width:140%; height:75%;
+      background: radial-gradient(circle at 50% 60%, rgba(255,77,109,0.18), transparent 60%);
+      transform: rotate(-6deg);
+      pointer-events:none;
+      z-index:0;
+    }
+
+    h1{
+      position:relative;
+      margin: 0 0 20px;
+      font-size: clamp(26px, 3.2vw, 40px);
+      letter-spacing: -0.02em;
+      z-index:2;
+    }
+
+    .btnArea{
+      position:relative;
+      height:160px;
+      margin-top: 10px;
+      z-index: 2;
+    }
+
+    button{
+      border:none;
+      cursor:pointer;
+      border-radius:999px;
+      padding:12px 22px;
+      font-size:18px;
+      font-weight:800;
+      user-select:none;
+      transition: transform 160ms ease, filter 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+      will-change: transform, left, top;
+    }
+
+    #yesBtn{
+      position:relative;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color:#fff;
+      box-shadow: 0 12px 28px rgba(201,24,74,0.26);
+      transform: scale(1);
+      z-index: 2;
+    }
+    #yesBtn:hover{ filter: brightness(1.06); }
+
+    #noBtn{
+      position:absolute;
+      left:50%; top:75%;
+      transform: translate(-50%, -50%) scale(1);
+      background: rgba(0,0,0,0.08);
+      color:#222;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+      z-index: 3;
+    }
+
+    .result{
+      position:relative;
+      margin-top: 10px;
+      min-height: 28px;
+      font-size: 18px;
+      font-weight: 650;
+      z-index:2;
+    }
+
+    .hearts{
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      overflow:hidden;
+      z-index:1;
+    }
+    .heart{
+      position:absolute;
+      font-size:18px;
+      opacity:0.9;
+      animation: floatUp linear forwards;
+      filter: drop-shadow(0 8px 10px rgba(0,0,0,0.12));
+    }
+    @keyframes floatUp{
+      from{ transform: translateY(25px) scale(0.8); opacity:0; }
+      10%{ opacity:0.9; }
+      to{ transform: translateY(-140%) scale(1.2); opacity:0; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="card" id="card">
+    <div class="hearts" id="hearts"></div>
+
+    <h1>💘 Արսին, will you be my valentine?</h1>
+
+    <div class="btnArea" id="btnArea">
+      <button id="yesBtn" type="button">Yes 💖</button>
+      <button id="noBtn" type="button">No 🙃</button>
+    </div>
+
+    <div class="result" id="result"></div>
+  </div>
+
+  <script>
+    const card   = document.getElementById("card");
+    const btnArea= document.getElementById("btnArea");
+    const yesBtn = document.getElementById("yesBtn");
+    const noBtn  = document.getElementById("noBtn");
+    const result = document.getElementById("result");
+    const hearts = document.getElementById("hearts");
+
+    let noEscapes = 0;
+    let yesScale  = 1;
+
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+    function placeNoNearYes(){
+      const yesRect = yesBtn.getBoundingClientRect();
+      const areaRect = btnArea.getBoundingClientRect();
+
+      const x = (yesRect.right - areaRect.left) + 34;
+      const y = (yesRect.top - areaRect.top) + (yesRect.height / 2);
+
+      noBtn.style.left = `${clamp(x, 20, areaRect.width - 20)}px`;
+      noBtn.style.top  = `${clamp(y, 20, areaRect.height - 20)}px`;
+      noBtn.style.transform = `translate(-50%, -50%) scale(1)`;
+    }
+
+    window.addEventListener("load", placeNoNearYes);
+    window.addEventListener("resize", placeNoNearYes);
+
+    function teleportNo(){
+      const areaRect = btnArea.getBoundingClientRect();
+      const pad = 16;
+
+      const minX = pad;
+      const maxX = areaRect.width - pad;
+      const minY = pad;
+      const maxY = areaRect.height - pad;
+
+      const x = minX + Math.random() * (maxX - minX);
+      const y = minY + Math.random() * (maxY - minY);
+
+      const noScale = clamp(1 - noEscapes * 0.08, 0.45, 1);
+
+      noBtn.style.left = `${x}px`;
+      noBtn.style.top  = `${y}px`;
+      noBtn.style.transform = `translate(-50%, -50%) scale(${noScale})`;
+    }
+
+    function onNoAttempt(){
+      noEscapes++;
+
+      if (noEscapes >= 2){
+        yesScale = clamp(1 + (noEscapes - 1) * 0.12, 1, 2.2);
+        yesBtn.style.transform = `scale(${yesScale})`;
+      }
+
+      teleportNo();
+
+      result.textContent =
+        noEscapes < 4 ? "Nope 😌" :
+        noEscapes < 7 ? "It keeps running away… 😂" :
+                        "Okay, destiny is screaming YES 💘";
+    }
+
+    noBtn.addEventListener("mouseenter", onNoAttempt);
+    noBtn.addEventListener("click", (e) => { e.preventDefault(); onNoAttempt(); });
+
+    yesBtn.addEventListener("click", () => {
+      result.textContent = "YAAAY 💖 Արսին said YES!!! 🥰🎉";
+      noBtn.style.opacity = "0.35";
+      noBtn.style.pointerEvents = "none";
+      burstHearts(30);
+      confetti(170);
+    });
+
+    function spawnHeart(){
+      const symbols = ["💖","💘","💗","💕","💞","❤️","🦋","🤘"];
+      const h = document.createElement("div");
+      h.className = "heart";
+      h.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+      h.style.left = `${Math.random() * card.offsetWidth}px`;
+      h.style.bottom = `-22px`;
+      h.style.animationDuration = `${3 + Math.random() * 3.5}s`;
+      hearts.appendChild(h);
+      setTimeout(() => h.remove(), 5000);
+    }
+    setInterval(spawnHeart, 520);
+
+    function burstHearts(n){
+      for (let i=0; i<n; i++){
+        setTimeout(spawnHeart, i * 55);
+      }
+    }
+
+    function confetti(pieces = 120){
+      const c = document.createElement("canvas");
+      c.width = window.innerWidth;
+      c.height = window.innerHeight;
+      c.style.position = "fixed";
+      c.style.left = "0";
+      c.style.top = "0";
+      c.style.pointerEvents = "none";
+      c.style.zIndex = "999";
+      document.body.appendChild(c);
+
+      const ctx = c.getContext("2d");
+      const parts = Array.from({ length: pieces }, () => ({
+        x: Math.random() * c.width,
+        y: -20,
+        vx: (Math.random() - 0.5) * 6,
+        vy: 2 + Math.random() * 5,
+        size: 4 + Math.random() * 6,
+      }));
+
+      let frames = 0;
+      function tick(){
+        frames++;
+        ctx.clearRect(0,0,c.width,c.height);
+        for (const p of parts){
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.03;
+          ctx.fillRect(p.x, p.y, p.size, p.size);
+        }
+        if (frames < 260) requestAnimationFrame(tick);
+        else c.remove();
+      }
+      tick();
+    }
+  </script>
+</body>
+</html>
